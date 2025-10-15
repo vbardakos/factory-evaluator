@@ -45,10 +45,10 @@ pub trait HasName {
 
 impl<T> HasName for Entry<T>
 where
-    T: Clone,
+    T: HasName + Clone,
 {
     fn name(&self) -> String {
-        unimplemented!()
+        self.0.try_lock().unwrap_or(self.lock()).name()
     }
 }
 
@@ -79,19 +79,6 @@ mod test {
 
         let locked = entry.lock();
         assert_eq!(*locked, data);
-    }
-
-    #[rstest]
-    fn test_entry_name() {
-        let entry = Entry::new(InnerMock {
-            name: "foo".into(),
-            value: 0,
-        });
-        // The HasName impl on Entry is unimplemented, so calling name() will panic
-        let result = std::panic::catch_unwind(|| {
-            entry.name();
-        });
-        assert!(result.is_err());
     }
 
     #[rstest]
@@ -164,7 +151,7 @@ mod test {
         let arc1 = entry.arc();
         let arc2 = entry.arc();
 
-        // Cloned Arc points to same object
+        // arcs should point to same obj
         assert!(Arc::ptr_eq(&arc1, &arc2));
 
         let locked = arc1.lock().unwrap();
@@ -179,12 +166,12 @@ mod test {
         });
         let weak_ref = entry.weak();
 
-        // Weak reference can upgrade while Entry is alive
+        // arcs alive
         assert!(weak_ref.upgrade().is_some());
 
         drop(entry);
 
-        // After all Arcs dropped, upgrade() fails
+        // arcs dropped
         assert!(weak_ref.upgrade().is_none());
     }
 
