@@ -1,7 +1,4 @@
-use std::{
-    fmt::Debug,
-    sync::{Arc, Mutex, MutexGuard, Weak},
-};
+use std::sync::{Arc, Mutex, MutexGuard, Weak};
 
 #[derive(Debug, Clone)]
 pub struct Entry<T: Clone>(Arc<Mutex<T>>);
