@@ -1,9 +1,15 @@
 use std::sync::{Arc, Mutex, MutexGuard, Weak};
 
-#[derive(Debug, Clone)]
-pub struct Entry<T: Clone>(Arc<Mutex<T>>);
+#[derive(Debug)]
+pub struct Entry<T>(Arc<Mutex<T>>);
 
-impl<T: Clone> Entry<T>
+impl<T> Clone for Entry<T> {
+    fn clone(&self) -> Self {
+        Entry(self.0.clone())
+    }
+}
+
+impl<T> Entry<T>
 where
     T: HasName,
 {
@@ -42,7 +48,7 @@ pub trait HasName {
 
 impl<T> HasName for Entry<T>
 where
-    T: HasName + Clone,
+    T: HasName,
 {
     fn name(&self) -> String {
         self.0.try_lock().unwrap_or(self.lock()).name()

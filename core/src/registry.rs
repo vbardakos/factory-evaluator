@@ -1,15 +1,14 @@
 use std::collections::HashMap;
-use std::hash::Hash;
 use std::sync::{Arc, Mutex, RwLock, RwLockReadGuard, RwLockWriteGuard};
 
 use crate::entry::{Entry, HasName};
 
 #[derive(Debug, Clone)]
-pub struct NamedRegistry<T: Clone>(Arc<RwLock<HashMap<String, Entry<T>>>>);
+pub struct NamedRegistry<T>(Arc<RwLock<HashMap<String, Entry<T>>>>);
 
 impl<T> NamedRegistry<T>
 where
-    T: HasName + Clone,
+    T: HasName,
 {
     fn new() -> Self {
         Self(Arc::new(RwLock::new(HashMap::new())))
@@ -21,7 +20,7 @@ where
             .is_some()
     }
 
-    pub fn update(&self, entry: &mut T) {
+    pub fn update(&self, entry: &mut T) where T: Clone {
         if let Some(existing) = self.get(&entry.name()) {
             existing.mutate(|inner| *inner = entry.clone());
         }
